@@ -1,3 +1,4 @@
+mod config;
 mod db;
 mod handlers;
 mod models;
@@ -39,25 +40,19 @@ fn resolve_dir(path: String, default_subdir: &str) -> PathBuf {
 async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
-    let db_path = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://pastebin.db".to_string());
-    let pool = db::init_pool(&db_path)
+    let cfg = config::load(&config::config_path());
+
+    let pool = db::init_pool(&cfg.database_url)
         .await
         .expect("Failed to create database pool");
 
-    let templates_dir = resolve_dir(
-        std::env::var("TEMPLATES_DIR").unwrap_or_else(|_| "templates".to_string()),
-        "templates",
-    );
-    let data_dir = std::env::var("DATA_DIR").unwrap_or_else(|_| "data".to_string());
-    let data_dir = resolve_dir(data_dir.clone(), "data");
+    let templates_dir = resolve_dir(cfg.templates_dir.clone(), "templates");
+    let data_dir = resolve_dir(cfg.data_dir.clone(), "data");
     std::fs::create_dir_all(&data_dir).ok();
 
-    let static_dir = resolve_dir(
-        std::env::var("STATIC_DIR").unwrap_or_else(|_| "static".to_string()),
-        "static",
-    );
+    let static_dir = resolve_dir(cfg.static_dir.clone(), "static");
 
-    log::info!("database: {}", db_path);
+    log::info!("database: {}", cfg.database_url);
     log::info!("data_dir: {}", data_dir.display());
     log::info!("templates_dir: {}", templates_dir.display());
 
@@ -68,8 +63,8 @@ async fn main() -> std::io::Result<()> {
         data_dir,
     });
 
-    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let port = std::env::var("PORT").ok().and_then(|p| p.parse().ok()).unwrap_or(8080);
+    let host = cfg.host.clone();
+    let port = cfg.port;
     log::info!("listening on http://{}:{}", host, port);
 
     HttpServer::new(move || {

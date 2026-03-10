@@ -19,15 +19,9 @@ cargo run
 
 3. 浏览器打开 <http://127.0.0.1:8080>。
 
-## 环境变量（可选）
+## 配置文件
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `HOST` | `127.0.0.1` | 监听地址，服务器部署可设 `0.0.0.0` |
-| `PORT` | `8080` | 监听端口 |
-| `DATABASE_URL` | `sqlite://pastebin.db` | SQLite 连接串 |
-| `TEMPLATES_DIR` | `templates` | 模板目录 |
-| `DATA_DIR` | `data` | 上传文件存储目录 |
+默认读取当前目录下的 `pastebin.toml`；路径可由环境变量 `CONFIG` 或 `PASTEBIN_CONFIG` 指定。配置项示例见项目根目录的 `pastebin.toml`（`database-url`、`host`、`port`、`data-dir`、`templates-dir`、`static-dir`）。文件不存在时使用内置默认值。
 
 服务器部署详见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 

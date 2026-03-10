@@ -21,7 +21,7 @@ cp -r templates static dist/
 tar -czvf pastebin-dist.tar.gz -C dist .
 ```
 
-得到 `pastebin-dist.tar.gz`，内含：`pastebin`、`templates/`、`static/`。
+得到 `pastebin-dist.tar.gz`，内含：`pastebin`、`templates/`、`static/`、`pastebin.toml`（示例配置，部署时按需修改路径）。
 
 ### 1.2 上传到服务器
 
@@ -42,19 +42,25 @@ ssh user@server "cd /opt && tar -xzvf pastebin-dist.tar.gz && mkdir -p data && c
 
 ### 1.3 服务器上运行
 
-无需安装 Rust，直接运行（或交给 systemd，见下文）：
+无需安装 Rust。在部署目录下放置配置文件（或通过环境变量 `CONFIG` / `PASTEBIN_CONFIG` 指定路径），然后运行（或交给 systemd，见下文）：
 
 ```bash
 cd /opt/pastebin
-export HOST=127.0.0.1
-export PORT=8080
-export DATABASE_URL=sqlite:///opt/pastebin/data/pastebin.db
-export DATA_DIR=/opt/pastebin/data
-export TEMPLATES_DIR=/opt/pastebin/templates
+# 可选：指定配置文件路径，默认为当前目录 pastebin.toml
+# export CONFIG=/opt/pastebin/pastebin.toml
+
+# 示例 pastebin.toml 内容见项目根目录 pastebin.toml；部署时建议改为绝对路径，例如：
+# database-url = "sqlite:///opt/pastebin/data/pastebin.db"
+# data-dir = "/opt/pastebin/data"
+# templates-dir = "/opt/pastebin/templates"
+# static-dir = "/opt/pastebin/static"
+# host = "127.0.0.1"
+# port = 8080
+
 ./pastebin
 ```
 
-更新时：重新打包、上传、覆盖二进制和 templates/static，然后重启进程即可。
+更新时：重新打包、上传、覆盖二进制和 templates/static（及配置文件若需），然后重启进程即可。
 
 ---
 
@@ -77,17 +83,26 @@ cargo build --release
 
 ---
 
-## 3. 环境变量
+## 3. 配置文件
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `HOST` | `127.0.0.1` | 监听地址，反代时用 127.0.0.1，直连用 0.0.0.0 |
-| `PORT` | `8080` | 监听端口 |
-| `DATABASE_URL` | `sqlite://pastebin.db` | SQLite 路径，建议用绝对路径如 `sqlite:///opt/pastebin/data/pastebin.db` |
-| `TEMPLATES_DIR` | `templates` | 模板目录，相对或绝对 |
-| `DATA_DIR` | `data` | 上传文件目录，相对或绝对，需可写 |
+配置以 **TOML 配置文件** 为主，默认读取当前工作目录下的 `pastebin.toml`；路径可通过环境变量覆盖：
 
-建议在部署目录下建 `data`、放数据库和上传文件，并保证进程用户有写权限。
+| 环境变量 | 说明 |
+|----------|------|
+| `CONFIG` 或 `PASTEBIN_CONFIG` | 配置文件路径（如 `/opt/pastebin/pastebin.toml`） |
+
+配置项（均在 TOML 中，kebab-case）：
+
+| 配置项 | 默认值 | 说明 |
+|--------|--------|------|
+| `database-url` | `sqlite://pastebin.db` | SQLite 连接串，部署建议用绝对路径如 `sqlite:///opt/pastebin/data/pastebin.db` |
+| `templates-dir` | `templates` | 模板目录 |
+| `data-dir` | `data` | 上传文件与数据库所在目录，需可写 |
+| `static-dir` | `static` | 静态资源目录 |
+| `host` | `127.0.0.1` | 监听地址，反代时用 127.0.0.1，直连可设 0.0.0.0 |
+| `port` | `8080` | 监听端口 |
+
+若配置文件不存在或某项未写，使用上表默认值。项目根目录的 `pastebin.toml` 可作为示例，部署时复制并修改路径即可。
 
 ---
 
@@ -109,11 +124,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/opt/pastebin
-Environment="HOST=127.0.0.1"
-Environment="PORT=8080"
-Environment="DATABASE_URL=sqlite:///opt/pastebin/data/pastebin.db"
-Environment="DATA_DIR=/opt/pastebin/data"
-Environment="TEMPLATES_DIR=/opt/pastebin/templates"
+Environment="CONFIG=/opt/pastebin/pastebin.toml"
 ExecStart=/opt/pastebin/pastebin
 Restart=on-failure
 RestartSec=5
@@ -121,6 +132,8 @@ RestartSec=5
 [Install]
 WantedBy=multi-user.target
 ```
+
+部署目录下需有 `pastebin.toml`，内容参考项目根目录同名文件，其中 `database-url`、`data-dir`、`templates-dir`、`static-dir` 建议改为 `/opt/pastebin/...` 绝对路径。
 
 注意：`ExecStart` 指向解压后的二进制 `/opt/pastebin/pastebin`。若你在服务器上从源码构建，改为 `ExecStart=/opt/pastebin/target/release/pastebin`。
 

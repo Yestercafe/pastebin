@@ -7,5 +7,6 @@ rm -rf dist
 mkdir -p dist
 cp target/release/pastebin dist/
 cp -r templates static dist/
+cp pastebin.toml dist/
 tar -czvf pastebin-dist.tar.gz -C dist .
 echo "Done: pastebin-dist.tar.gz"
