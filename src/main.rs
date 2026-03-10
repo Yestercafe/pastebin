@@ -37,6 +37,8 @@ fn resolve_dir(path: String, default_subdir: &str) -> PathBuf {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+
     let db_path = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://pastebin.db".to_string());
     let pool = db::init_pool(&db_path)
         .await
@@ -55,12 +57,20 @@ async fn main() -> std::io::Result<()> {
         "static",
     );
 
+    log::info!("database: {}", db_path);
+    log::info!("data_dir: {}", data_dir.display());
+    log::info!("templates_dir: {}", templates_dir.display());
+
     let static_dir_arc = Arc::new(static_dir);
     let state = web::Data::new(AppState {
         pool,
         templates_dir,
         data_dir,
     });
+
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT").ok().and_then(|p| p.parse().ok()).unwrap_or(8080);
+    log::info!("listening on http://{}:{}", host, port);
 
     HttpServer::new(move || {
         let static_path = (*static_dir_arc).clone();
@@ -76,10 +86,7 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::file)
             .service(actix_files::Files::new("/static", static_path))
     })
-    .bind((
-        std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string()),
-        std::env::var("PORT").ok().and_then(|p| p.parse().ok()).unwrap_or(8080),
-    ))?
+    .bind((host.clone(), port))?
     .run()
     .await
 }

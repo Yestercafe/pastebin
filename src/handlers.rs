@@ -88,6 +88,7 @@ struct ListPasteItem {
 #[get("/list")]
 async fn list(state: web::Data<AppState>) -> impl Responder {
     let pastes = db::list_pastes(&state.pool).await.unwrap_or_default();
+    log::info!("list pastes count={}", pastes.len());
     let now = Utc::now();
     let items: Vec<ListPasteItem> = pastes
         .into_iter()
@@ -189,11 +190,13 @@ async fn create_paste(state: web::Data<AppState>, mut payload: Multipart) -> imp
             }
         } else {
             // 必须消费每个 part 的 body，否则后续 part 会错位或挂起
+            log::debug!("multipart unknown field name={:?}, draining", name);
             while let Ok(Some(_)) = field.try_next().await {}
         }
     }
 
     if content.is_empty() {
+        log::warn!("create_paste rejected: content empty");
         return HttpResponse::BadRequest().body("Content is required");
     }
 
@@ -201,6 +204,13 @@ async fn create_paste(state: web::Data<AppState>, mut payload: Multipart) -> imp
     while db::paste_exists(&state.pool, &id).await.unwrap_or(false) {
         id = db::generate_paste_id();
     }
+    log::info!(
+        "create_paste id={} title={} content_len={} files={}",
+        id,
+        title.as_deref().unwrap_or("(none)"),
+        content.len(),
+        files.len()
+    );
 
     let expires_at = expires_at_from_option(&expires);
     if let Err(e) = db::create_paste(
@@ -214,6 +224,7 @@ async fn create_paste(state: web::Data<AppState>, mut payload: Multipart) -> imp
     )
     .await
     {
+        log::error!("create_paste id={} db error: {}", id, e);
         return HttpResponse::InternalServerError().body(format!("DB error: {}", e));
     }
 
@@ -254,14 +265,22 @@ async fn view(state: web::Data<AppState>, id: web::Path<String>) -> impl Respond
     let id = id.into_inner();
     let paste = match db::get_paste(&state.pool, &id).await {
         Ok(Some(p)) => p,
-        Ok(None) => return HttpResponse::NotFound().body("Paste not found"),
-        Err(_) => return HttpResponse::InternalServerError().body("DB error"),
+        Ok(None) => {
+            log::debug!("view id={} not found", id);
+            return HttpResponse::NotFound().body("Paste not found");
+        }
+        Err(e) => {
+            log::warn!("view id={} db error: {}", id, e);
+            return HttpResponse::InternalServerError().body("DB error");
+        }
     };
 
     if paste.expires_at < Utc::now() {
+        log::debug!("view id={} expired", id);
         return HttpResponse::Gone().body("Paste has expired");
     }
 
+    log::debug!("view id={} title={:?}", id, paste.title.as_deref());
     let attachments = db::list_attachments(&state.pool, &id).await.unwrap_or_default();
     #[derive(serde::Serialize)]
     struct ViewPaste {
@@ -321,6 +340,7 @@ async fn view(state: web::Data<AppState>, id: web::Path<String>) -> impl Respond
 #[get("/p/{id}/edit")]
 async fn edit_form(state: web::Data<AppState>, id: web::Path<String>) -> impl Responder {
     let id = id.into_inner();
+    log::debug!("edit_form id={}", id);
     let paste = match db::get_paste(&state.pool, &id).await {
         Ok(Some(p)) => p,
         Ok(None) => return HttpResponse::NotFound().body("Paste not found"),
@@ -415,8 +435,10 @@ async fn edit_submit(
     .await
     .is_err()
     {
+        log::warn!("edit_submit id={} update failed", id);
         return HttpResponse::InternalServerError().body("Update failed");
     }
+    log::info!("edit_submit id={} ok", id);
 
     HttpResponse::SeeOther()
         .append_header(("Location", format!("/p/{}", id)))
@@ -427,9 +449,11 @@ async fn edit_submit(
 async fn delete(state: web::Data<AppState>, id: web::Path<String>) -> impl Responder {
     let id = id.into_inner();
     if db::get_paste(&state.pool, &id).await.ok().flatten().is_none() {
+        log::debug!("delete id={} not found", id);
         return HttpResponse::NotFound().finish();
     }
     let _ = db::delete_paste(&state.pool, &id).await;
+    log::info!("delete id={}", id);
     let dir = state.data_dir.join(&id);
     let _ = std::fs::remove_dir_all(&dir);
     HttpResponse::SeeOther()
@@ -443,6 +467,7 @@ async fn file(
     path: web::Path<(String, String)>,
 ) -> impl Responder {
     let (id, stored_name) = path.into_inner();
+    log::debug!("file id={} stored_name={}", id, stored_name);
     let paste = match db::get_paste(&state.pool, &id).await {
         Ok(Some(p)) => p,
         Ok(None) => return HttpResponse::NotFound().finish(),

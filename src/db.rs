@@ -50,7 +50,11 @@ async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .fetch_optional(pool)
     .await?;
     if has_title.is_none() {
-        let _ = sqlx::query("ALTER TABLE pastes ADD COLUMN title TEXT").execute(pool).await;
+        if let Err(e) = sqlx::query("ALTER TABLE pastes ADD COLUMN title TEXT").execute(pool).await {
+            log::warn!("db migration add pastes.title: {}", e);
+        } else {
+            log::info!("db migration: added pastes.title column");
+        }
     }
 
     sqlx::query(
