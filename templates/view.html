@@ -24,7 +24,7 @@
     <p class="meta"><a href="/p/{{ paste.id }}/edit">编辑</a></p>
 
     <div class="code-wrap">
-      <pre><code class="language-{{ paste.language or 'text' }}">{{ paste.content }}</code></pre>
+      <pre><code class="language-{{ paste.language or 'text' }}">{{ paste.content | safe }}</code></pre>
     </div>
 
     {% if attachments and attachments | length > 0 %}
