@@ -1,0 +1,19 @@
+# Rust
+/target
+
+# 运行时与数据
+/data
+*.db
+.env
+
+# 打包与测试产物
+/dist
+pastebin-dist.tar.gz
+scripts/test_run.log
+docs/test_run_*.log
+
+# 系统与编辑器
+.DS_Store
+*.swp
+*.swo
+*~

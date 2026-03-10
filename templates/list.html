@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>所有记录</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/">新建</a>
+    <a href="/list">所有记录</a>
+  </nav>
+  <main class="main">
+    <h1>所有记录</h1>
+    {% if items and items | length > 0 %}
+    <div class="table-wrap">
+      <table class="list-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>标题</th>
+            <th>作者</th>
+            <th>创建时间</th>
+            <th>过期时间</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td><a href="/p/{{ item.id }}">{{ item.id }}</a></td>
+            <td>{{ item.title or "-" }}</td>
+            <td>{{ item.author or "-" }}</td>
+            <td>{{ item.created_at }}</td>
+            <td>{{ item.expires_at }}</td>
+            <td>{{ "已过期" if item.expired else "有效" }}</td>
+            <td class="actions">
+              <a href="/p/{{ item.id }}" class="btn btn-sm">查看</a>
+              <a href="/p/{{ item.id }}/edit" class="btn btn-sm">编辑</a>
+              <form action="/p/{{ item.id }}/delete" method="post" class="inline-form" onsubmit="return confirm('确定删除？');">
+                <button type="submit" class="btn btn-sm btn-danger">删除</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty">暂无记录。</p>
+    {% endif %}
+  </main>
+</body>
+</html>

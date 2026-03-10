@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ paste.title or paste.id }}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/">新建</a>
+    <a href="/list">所有记录</a>
+  </nav>
+  <main class="main">
+    <h1>{{ paste.title or "无标题" }}</h1>
+    {% if paste.author %}
+    <p class="meta">作者：{{ paste.author }}</p>
+    {% endif %}
+    <p class="meta">创建于 {{ paste.created_at }} · 过期 {{ paste.expires_at }}</p>
+    <p class="meta"><a href="/p/{{ paste.id }}/edit">编辑</a></p>
+
+    <div class="code-wrap">
+      <pre><code class="language-{{ paste.language or 'text' }}">{{ paste.content }}</code></pre>
+    </div>
+
+    {% if attachments and attachments | length > 0 %}
+    <section class="attachments">
+      <h2>图片</h2>
+      <div class="images">
+        {% for a in attachments %}
+        {% if a.is_image %}
+        <figure>
+          <img src="/p/{{ paste.id }}/file/{{ a.stored_name }}" alt="{{ a.original_filename }}" loading="lazy">
+          <figcaption>{{ a.original_filename }}</figcaption>
+        </figure>
+        {% endif %}
+        {% endfor %}
+      </div>
+      <h2>附件</h2>
+      <ul class="file-list">
+        {% for a in attachments %}
+        {% if not a.is_image %}
+        <li><a href="/p/{{ paste.id }}/file/{{ a.stored_name }}" download="{{ a.original_filename }}">{{ a.original_filename }}</a> ({{ a.size }} 字节)</li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</body>
+</html>

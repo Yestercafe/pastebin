@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>编辑 {{ paste.id }}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/">新建</a>
+    <a href="/list">所有记录</a>
+  </nav>
+  <main class="main">
+    <h1>编辑 Paste</h1>
+    <form action="/p/{{ paste.id }}/edit" method="post" class="form">
+      <label for="content">内容 <span class="required">*</span></label>
+      <textarea id="content" name="content" rows="12" required>{{ paste.content }}</textarea>
+
+      <label for="title">标题</label>
+      <input type="text" id="title" name="title" value="{{ paste.title or '' }}" placeholder="可选">
+
+      <label for="author">作者</label>
+      <input type="text" id="author" name="author" value="{{ paste.author or '' }}" placeholder="可选">
+
+      <label for="language">语法高亮</label>
+      <select id="language" name="language">
+        <option value="">纯文本</option>
+        <option value="python" {% if paste.language == "python" %}selected{% endif %}>Python</option>
+        <option value="javascript" {% if paste.language == "javascript" %}selected{% endif %}>JavaScript</option>
+        <option value="rust" {% if paste.language == "rust" %}selected{% endif %}>Rust</option>
+        <option value="bash" {% if paste.language == "bash" %}selected{% endif %}>Bash</option>
+        <option value="json" {% if paste.language == "json" %}selected{% endif %}>JSON</option>
+        <option value="html" {% if paste.language == "html" %}selected{% endif %}>HTML</option>
+        <option value="css" {% if paste.language == "css" %}selected{% endif %}>CSS</option>
+        <option value="sql" {% if paste.language == "sql" %}selected{% endif %}>SQL</option>
+      </select>
+
+      <label for="expires">保留时间</label>
+      <select id="expires" name="expires">
+        <option value="1d">1 天</option>
+        <option value="1w">1 周</option>
+        <option value="1m">1 月</option>
+        <option value="never">长期</option>
+      </select>
+
+      {% if attachments and attachments | length > 0 %}
+      <div class="current-attachments">
+        <p>当前附件（编辑仅更新文本与元数据，附件不变）：</p>
+        <ul>
+          {% for a in attachments %}
+          <li>{{ a.original_filename }} ({{ a.stored_name }})</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary">保存</button>
+      <a href="/p/{{ paste.id }}" class="btn">取消</a>
+    </form>
+  </main>
+</body>
+</html>
