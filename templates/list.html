@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>所有记录</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -30,13 +33,13 @@
         <tbody>
           {% for item in items %}
           <tr>
-            <td><a href="/p/{{ item.id }}">{{ item.id }}</a></td>
-            <td>{{ item.title or "-" }}</td>
-            <td>{{ item.author or "-" }}</td>
-            <td>{{ item.created_at }}</td>
-            <td>{{ item.expires_at }}</td>
-            <td>{{ "已过期" if item.expired else "有效" }}</td>
-            <td class="actions">
+            <td data-label="ID"><a href="/p/{{ item.id }}">{{ item.id }}</a></td>
+            <td data-label="标题">{{ item.title or "-" }}</td>
+            <td data-label="作者">{{ item.author or "-" }}</td>
+            <td data-label="创建时间">{{ item.created_at }}</td>
+            <td data-label="过期时间">{{ item.expires_at }}</td>
+            <td data-label="状态">{{ "已过期" if item.expired else "有效" }}</td>
+            <td class="actions" data-label="操作">
               <a href="/p/{{ item.id }}" class="btn btn-sm">查看</a>
               <a href="/p/{{ item.id }}/edit" class="btn btn-sm">编辑</a>
               <form action="/p/{{ item.id }}/delete" method="post" class="inline-form" onsubmit="return confirm('确定删除？');">
@@ -52,5 +55,6 @@
     <p class="empty">暂无记录。</p>
     {% endif %}
   </main>
+  <script src="/static/js/app.js"></script>
 </body>
 </html>
