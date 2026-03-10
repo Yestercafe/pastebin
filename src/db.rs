@@ -43,6 +43,16 @@ async fn init_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .execute(pool)
     .await?;
 
+    // 兼容旧库：若 pastes 表缺少 title 列则补上
+    let has_title: Option<(i64,)> = sqlx::query_as(
+        "SELECT 1 FROM pragma_table_info('pastes') WHERE name = 'title'",
+    )
+    .fetch_optional(pool)
+    .await?;
+    if has_title.is_none() {
+        let _ = sqlx::query("ALTER TABLE pastes ADD COLUMN title TEXT").execute(pool).await;
+    }
+
     sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS attachments (

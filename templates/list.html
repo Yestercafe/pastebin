@@ -34,8 +34,8 @@
           {% for item in items %}
           <tr>
             <td data-label="ID"><a href="/p/{{ item.id }}">{{ item.id }}</a></td>
-            <td data-label="标题">{{ item.title or "-" }}</td>
-            <td data-label="作者">{{ item.author or "-" }}</td>
+            <td data-label="标题">{{ item.title }}</td>
+            <td data-label="作者">{{ item.author }}</td>
             <td data-label="创建时间">{{ item.created_at }}</td>
             <td data-label="过期时间">{{ item.expires_at }}</td>
             <td data-label="状态">{{ "已过期" if item.expired else "有效" }}</td>

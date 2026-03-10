@@ -76,8 +76,9 @@ async fn index(state: web::Data<AppState>) -> impl Responder {
 struct ListPasteItem {
     id: String,
     content: String,
-    title: Option<String>,
-    author: Option<String>,
+    /// 传字符串到模板，避免 minijinja 对 Option 序列化导致标题/作者不显示
+    title: String,
+    author: String,
     language: Option<String>,
     created_at: String,
     expires_at: String,
@@ -95,8 +96,8 @@ async fn list(state: web::Data<AppState>) -> impl Responder {
             ListPasteItem {
                 id: p.id,
                 content: p.content,
-                title: p.title,
-                author: p.author,
+                title: p.title.unwrap_or_else(|| "-".to_string()),
+                author: p.author.unwrap_or_else(|| "-".to_string()),
                 language: p.language,
                 created_at: p.created_at.format("%Y-%m-%d %H:%M").to_string(),
                 expires_at: p.expires_at.format("%Y-%m-%d %H:%M").to_string(),
@@ -186,6 +187,9 @@ async fn create_paste(state: web::Data<AppState>, mut payload: Multipart) -> imp
                 }
                 files.push((filename, body, ctype));
             }
+        } else {
+            // 必须消费每个 part 的 body，否则后续 part 会错位或挂起
+            while let Ok(Some(_)) = field.try_next().await {}
         }
     }
 
