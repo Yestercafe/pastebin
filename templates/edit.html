@@ -31,12 +31,40 @@
         <option value="">纯文本</option>
         <option value="python" {% if paste.language == "python" %}selected{% endif %}>Python</option>
         <option value="javascript" {% if paste.language == "javascript" %}selected{% endif %}>JavaScript</option>
+        <option value="typescript" {% if paste.language == "typescript" %}selected{% endif %}>TypeScript</option>
         <option value="rust" {% if paste.language == "rust" %}selected{% endif %}>Rust</option>
+        <option value="go" {% if paste.language == "go" %}selected{% endif %}>Go</option>
+        <option value="java" {% if paste.language == "java" %}selected{% endif %}>Java</option>
+        <option value="kotlin" {% if paste.language == "kotlin" %}selected{% endif %}>Kotlin</option>
+        <option value="swift" {% if paste.language == "swift" %}selected{% endif %}>Swift</option>
+        <option value="csharp" {% if paste.language == "csharp" %}selected{% endif %}>C#</option>
+        <option value="cpp" {% if paste.language == "cpp" %}selected{% endif %}>C++</option>
+        <option value="c" {% if paste.language == "c" %}selected{% endif %}>C</option>
+        <option value="ruby" {% if paste.language == "ruby" %}selected{% endif %}>Ruby</option>
+        <option value="php" {% if paste.language == "php" %}selected{% endif %}>PHP</option>
+        <option value="elixir" {% if paste.language == "elixir" %}selected{% endif %}>Elixir</option>
+        <option value="dart" {% if paste.language == "dart" %}selected{% endif %}>Dart</option>
+        <option value="scala" {% if paste.language == "scala" %}selected{% endif %}>Scala</option>
+        <option value="haskell" {% if paste.language == "haskell" %}selected{% endif %}>Haskell</option>
+        <option value="julia" {% if paste.language == "julia" %}selected{% endif %}>Julia</option>
+        <option value="lua" {% if paste.language == "lua" %}selected{% endif %}>Lua</option>
+        <option value="perl" {% if paste.language == "perl" %}selected{% endif %}>Perl</option>
+        <option value="r" {% if paste.language == "r" %}selected{% endif %}>R</option>
+        <option value="groovy" {% if paste.language == "groovy" %}selected{% endif %}>Groovy</option>
         <option value="bash" {% if paste.language == "bash" %}selected{% endif %}>Bash</option>
+        <option value="powershell" {% if paste.language == "powershell" %}selected{% endif %}>PowerShell</option>
+        <option value="dockerfile" {% if paste.language == "dockerfile" %}selected{% endif %}>Dockerfile</option>
+        <option value="makefile" {% if paste.language == "makefile" %}selected{% endif %}>Makefile</option>
         <option value="json" {% if paste.language == "json" %}selected{% endif %}>JSON</option>
+        <option value="yaml" {% if paste.language == "yaml" %}selected{% endif %}>YAML</option>
+        <option value="toml" {% if paste.language == "toml" %}selected{% endif %}>TOML</option>
         <option value="html" {% if paste.language == "html" %}selected{% endif %}>HTML</option>
+        <option value="xml" {% if paste.language == "xml" %}selected{% endif %}>XML</option>
         <option value="css" {% if paste.language == "css" %}selected{% endif %}>CSS</option>
+        <option value="scss" {% if paste.language == "scss" %}selected{% endif %}>SCSS</option>
         <option value="sql" {% if paste.language == "sql" %}selected{% endif %}>SQL</option>
+        <option value="graphql" {% if paste.language == "graphql" %}selected{% endif %}>GraphQL</option>
+        <option value="markdown" {% if paste.language == "markdown" %}selected{% endif %}>Markdown</option>
       </select>
 
       <label for="expires">保留时间</label>
