@@ -23,7 +23,7 @@ cargo run
 
 默认读取当前目录下的 `pastebin.toml`；路径可由环境变量 `CONFIG` 或 `PASTEBIN_CONFIG` 指定。配置项示例见项目根目录的 `pastebin.toml`（`database-url`、`host`、`port`、`data-dir`、`templates-dir`、`static-dir`）。文件不存在时使用内置默认值。
 
-服务器部署详见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+发布版本目标为 **Ubuntu 20.04**；在带 Docker 的机器上执行 `./scripts/make-dist-ubuntu2004.sh` 可打出在该系统上直接运行的 tar 包。服务器部署详见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
 ## 功能
 

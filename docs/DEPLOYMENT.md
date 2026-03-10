@@ -2,6 +2,8 @@
 
 支持两种方式：**仅部署制品**（推荐，服务器无需代码与 Rust），或在服务器上构建。
 
+**发布版本目标**：Ubuntu 20.04。若生产环境为该系统，建议使用 `scripts/make-dist-ubuntu2004.sh` 在 Ubuntu 20.04 容器内构建，避免 glibc 版本差异。
+
 ---
 
 ## 1. 仅部署制品（服务器不放代码）
@@ -10,24 +12,29 @@
 
 ### 1.1 本地打包
 
-在项目目录执行（或直接运行 `./scripts/make-dist.sh`）：
+**目标 Ubuntu 20.04（推荐）**：在已安装 Docker 的机器上执行，在容器内用 Ubuntu 20.04 构建，得到的二进制可在 Ubuntu 20.04 上直接运行：
 
 ```bash
-cargo build --release
-mkdir -p dist
-cp target/release/pastebin dist/
-cp -r templates static dist/
-# data 与数据库在服务器上新建，不打包
-tar -czvf pastebin-dist.tar.gz -C dist .
+./scripts/make-dist-ubuntu2004.sh
 ```
 
-得到 `pastebin-dist.tar.gz`，内含：`pastebin`、`templates/`、`static/`、`pastebin.toml`（示例配置，部署时按需修改路径）。
+得到 `pastebin-dist-ubuntu2004.tar.gz`，内含：`pastebin`、`templates/`、`static/`、`pastebin.toml`。若拉取镜像报错（如 short read），国内用户可参考 [docs/DOCKER-MIRRORS-CN.md](DOCKER-MIRRORS-CN.md) 配置镜像加速。
+
+**本机当前系统**：若无需与 Ubuntu 20.04 兼容，可直接：
+
+```bash
+./scripts/make-dist.sh
+```
+
+得到 `pastebin-dist.tar.gz`，内含同上。注意：在较新系统（如 Ubuntu 24）上构建的二进制可能无法在 Ubuntu 20.04 上运行（glibc 过新）。
 
 ### 1.2 上传到服务器
 
+将得到的 tar 包（`pastebin-dist.tar.gz` 或 `pastebin-dist-ubuntu2004.tar.gz`）上传并解压：
+
 ```bash
-scp pastebin-dist.tar.gz user@server:/opt/
-ssh user@server "cd /opt && tar -xzvf pastebin-dist.tar.gz && mkdir -p data && chown www-data:www-data data"
+scp pastebin-dist-ubuntu2004.tar.gz user@server:/opt/
+ssh user@server "cd /opt && tar -xzvf pastebin-dist-ubuntu2004.tar.gz && mkdir -p data && chown www-data:www-data data"
 ```
 
 部署目录建议固定为 `/opt/pastebin`，解压后结构示例：

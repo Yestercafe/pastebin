@@ -9,6 +9,7 @@
 # 打包与测试产物
 /dist
 pastebin-dist.tar.gz
+pastebin-dist-ubuntu2004.tar.gz
 scripts/test_run.log
 docs/test_run_*.log
 
